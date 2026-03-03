@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JuiceKadai — Pure. Pressed. Alive.</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Syne:wght@400;500;600;700;800&family=Fraunces:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Playfair Display', 'serif'],
+          sans: ['Syne', 'sans-serif'],
+          body: ['Fraunces', 'serif'],
+        },
+        colors: {
+          juice: {
+            lime: '#8BC34A',
+            limeD: '#558B2F',
+            orange: '#FF6D00',
+            orangeL: '#FF9E40',
+            mango: '#FFB300',
+            green: '#2E7D32',
+            cream: '#FFF8E7',
+            bark: '#3E2723',
+            berry: '#C62828',
+            sand: '#F5E6C8',
+          }
+        }
+      }
+    }
+  }
+</script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --lime:#8BC34A;
+    --lime-dark:#558B2F;
+    --orange:#FF6D00;
+    --orange-light:#FF9E40;
+    --mango:#FFB300;
+    --cream:#FFF8E7;
+    --bark:#3E2723;
+    --sand:#F5E6C8;
+    --berry:#C62828;
+    --green-deep:#1B5E20;
+  }
+
+  html{scroll-behavior:smooth;overflow-x:hidden;}
+  body{background:var(--cream);color:var(--bark);font-family:'Syne',sans-serif;overflow-x:hidden;}
+
+  /* FRUIT CURSOR */
+  #fruit-cursor{
+    position:fixed;
+    top:0;left:0;
+    pointer-events:none;
+    z-index:99999;
+    font-size:1.6rem;
+    line-height:1;
+    transform:translate(-50%,-60%);
+    transition:transform 0.08s ease;
+    filter:drop-shadow(0 4px 8px rgba(62,39,35,0.25));
+    will-change:transform;
+    user-select:none;
+  }
+  #fruit-cursor.hovering{
+    transform:translate(-50%,-60%) scale(1.4) rotate(-15deg);
+    transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  /* subtle ring behind cursor */
+  #fruit-cursor-ring{
+    position:fixed;
+    top:0;left:0;
+    width:44px;height:44px;
+    border-radius:50%;
+    border:1.5px solid rgba(255,109,0,0.35);
+    pointer-events:none;
+    z-index:99998;
+    transform:translate(-50%,-50%);
+    transition:width 0.3s ease,height 0.3s ease,border-color 0.3s ease,opacity 0.3s ease;
+    opacity:0.7;
+  }
+  #fruit-cursor-ring.hovering{
+    width:64px;height:64px;
+    border-color:rgba(255,109,0,0.6);
+    opacity:1;
+  }
+
+  @media(hover:none),(max-width:768px){
+    #fruit-cursor,#fruit-cursor-ring{display:none!important;}
+  }
+
+  /* NAV */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:1000;
+    padding:1.5rem 4%;
+    display:flex;align-items:center;justify-content:space-between;
+    transition:all 0.4s ease;
+  }
+  nav.scrolled{
+    background:rgba(255,248,231,0.92);
+    backdrop-filter:blur(20px);
+    padding:1rem 4%;
+    box-shadow:0 2px 40px rgba(62,39,35,0.08);
+  }
+  .nav-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--bark);letter-spacing:-0.02em;}
+  .nav-logo span{color:var(--orange);}
+  .nav-links a{color:var(--bark);text-decoration:none;font-size:0.85rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;position:relative;padding:4px 0;}
+  .nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--orange);transition:width 0.3s ease;}
+  .nav-links a:hover::after{width:100%;}
+  .nav-cta{
+    background:var(--bark);color:var(--cream)!important;
+    padding:0.6rem 1.4rem!important;
+    border-radius:100px;
+    font-size:0.8rem!important;
+    letter-spacing:0.1em!important;
+    transition:all 0.3s ease!important;
+  }
+  .nav-cta:hover{background:var(--orange)!important;}
+  .nav-cta::after{display:none!important;}
+  .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:5px;}
+  .hamburger span{width:24px;height:2px;background:var(--bark);border-radius:2px;transition:all 0.3s;}
+  .mobile-menu{
+    display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+    background:var(--cream);z-index:999;
+    flex-direction:column;align-items:center;justify-content:center;gap:2rem;
+  }
+  .mobile-menu.open{display:flex;}
+  .mobile-menu a{font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:700;color:var(--bark);text-decoration:none;}
+
+  /* HERO */
+  .hero{
+    min-height:100vh;
+    display:flex;align-items:center;
+    position:relative;
+    overflow:hidden;
+    padding:0 4%;
+  }
+  .hero-bg{
+    position:absolute;inset:0;
+    background:radial-gradient(ellipse 80% 70% at 70% 40%, rgba(255,109,0,0.08) 0%, transparent 60%),
+               radial-gradient(ellipse 50% 60% at 20% 80%, rgba(139,195,74,0.12) 0%, transparent 50%),
+               var(--cream);
+  }
+  .hero-blob{
+    position:absolute;
+    border-radius:60% 40% 70% 30% / 50% 60% 40% 50%;
+    filter:blur(60px);
+    opacity:0.25;
+    animation:blobmove 8s ease-in-out infinite alternate;
+  }
+  @keyframes blobmove{
+    0%{border-radius:60% 40% 70% 30% / 50% 60% 40% 50%;}
+    100%{border-radius:40% 60% 30% 70% / 60% 40% 50% 40%;}
+  }
+  .hero-content{position:relative;z-index:2;max-width:700px;}
+  .hero-badge{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(139,195,74,0.15);
+    border:1px solid rgba(139,195,74,0.4);
+    padding:0.4rem 1rem;border-radius:100px;
+    font-size:0.75rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;
+    color:var(--lime-dark);margin-bottom:2rem;
+  }
+  .hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--lime);animation:pulse 2s ease infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.5);}}
+  .hero-title{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(3.5rem,8vw,7rem);
+    line-height:0.95;
+    font-weight:900;
+    letter-spacing:-0.03em;
+    margin-bottom:1.5rem;
+  }
+  .hero-title .line{display:block;overflow:hidden;}
+  .hero-title .orange{color:var(--orange);}
+  .hero-title .italic{font-style:italic;font-weight:400;}
+  .hero-sub{
+    font-family:'Fraunces',serif;
+    font-size:clamp(1rem,2vw,1.25rem);
+    color:#6B4C3B;
+    max-width:480px;
+    line-height:1.7;
+    margin-bottom:2.5rem;
+    font-weight:300;
+  }
+  .hero-actions{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;}
+
+  /* =====================
+     JUICE BUTTONS — solid filled default, different juice color floods on hover
+  ===================== */
+  .juice-btn{
+    position:relative;
+    overflow:hidden;
+    padding:1rem 2.2rem;
+    border-radius:100px;
+    font-family:'Syne',sans-serif;
+    font-weight:700;
+    font-size:0.85rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    border:none;
+    cursor:pointer;
+    transition:transform 0.2s ease;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .juice-btn:active{transform:scale(0.97);}
+
+  .juice-btn .btn-text{
+    position:relative;
+    z-index:3;
+    transition:color 0.4s ease;
+  }
+
+  /* the rising juice wave — hidden below by default */
+  .juice-btn .juice-fill{
+    position:absolute;
+    bottom:-110%;
+    left:-10%; right:-10%;
+    height:260%;
+    border-radius:48% 52% 0 0 / 30% 30% 0 0;
+    z-index:2;
+    transition:bottom 0.58s cubic-bezier(0.22,1,0.36,1);
+    pointer-events:none;
+  }
+  .juice-btn:hover .juice-fill{bottom:-28%;}
+
+  /* PRIMARY — dark bark filled, orange juice floods in */
+  .btn-primary{background:var(--bark);color:#fff;}
+  .btn-primary .juice-fill{background:var(--orange);}
+  .btn-primary:hover .btn-text{color:#fff;}
+
+  /* SECONDARY — light sand filled, lime juice floods in */
+  .btn-secondary{background:var(--sand);color:var(--bark);border:none;}
+  .btn-secondary .juice-fill{background:var(--lime);}
+  .btn-secondary:hover .btn-text{color:#fff;}
+
+  /* WHITE variant on CTA orange bg — white fill, mango wave */
+  .btn-white{background:rgba(255,255,255,0.18) !important;color:#fff !important;border:2px solid rgba(255,255,255,0.5) !important;}
+  .btn-white .juice-fill{background:rgba(255,255,255,0.9) !important;}
+  .btn-white:hover .btn-text{color:var(--orange) !important;}
+
+  /* Nav CTA */
+  .nav-cta{
+    background:var(--bark) !important;
+    color:var(--cream) !important;
+    border:none !important;
+    padding:0.55rem 1.3rem !important;
+    border-radius:100px !important;
+    font-size:0.8rem !important;
+    letter-spacing:0.1em !important;
+  }
+  .nav-cta .juice-fill{background:var(--orange) !important;}
+  .nav-cta:hover .btn-text{color:#fff !important;}
+  .nav-cta::after{display:none !important;}
+
+  /* MARQUEE */
+  .marquee-wrap{background:var(--bark);overflow:hidden;padding:1rem 0;}
+  .marquee-inner{display:flex;gap:3rem;width:max-content;animation:marquee 20s linear infinite;}
+  @keyframes marquee{0%{transform:translateX(0);}100%{transform:translateX(-50%)}}
+  .marquee-item{font-size:0.8rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--sand);white-space:nowrap;}
+  .marquee-dot{color:var(--orange);font-size:1.2rem;}
+
+  /* FLOATING FRUITS */
+  .fruit-float{
+    position:absolute;
+    font-size:3rem;
+    opacity:0.15;
+    animation:floatfruit 6s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes floatfruit{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-20px) rotate(10deg);}}
+
+  /* SECTIONS */
+  section{padding:8rem 4%;}
+
+  /* ABOUT */
+  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;}
+  .section-label{
+    font-size:0.7rem;font-weight:800;letter-spacing:0.25em;text-transform:uppercase;
+    color:var(--orange);margin-bottom:1rem;
+  }
+  .section-title{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(2rem,5vw,3.8rem);
+    line-height:1.05;
+    font-weight:900;
+    letter-spacing:-0.02em;
+    margin-bottom:1.5rem;
+  }
+  .section-body{
+    font-family:'Fraunces',serif;
+    font-size:1.05rem;color:#6B4C3B;line-height:1.8;font-weight:300;
+  }
+  .about-img-stack{position:relative;height:520px;}
+  .about-img-main{
+    position:absolute;right:0;top:0;
+    width:80%;height:420px;
+    border-radius:40% 60% 60% 40% / 40% 40% 60% 60%;
+    overflow:hidden;
+    box-shadow:0 30px 80px rgba(62,39,35,0.2);
+  }
+  .about-img-accent{
+    position:absolute;left:0;bottom:0;
+    width:55%;height:280px;
+    border-radius:60% 40% 40% 60% / 60% 60% 40% 40%;
+    overflow:hidden;
+    box-shadow:0 20px 60px rgba(62,39,35,0.15);
+    border:6px solid var(--cream);
+  }
+  .about-img-main img, .about-img-accent img{width:100%;height:100%;object-fit:cover;}
+  .about-stat{
+    display:inline-flex;flex-direction:column;
+    background:var(--bark);color:var(--cream);
+    padding:1.2rem 1.8rem;border-radius:20px;
+    position:absolute;right:0;bottom:60px;
+    box-shadow:0 20px 40px rgba(62,39,35,0.3);
+  }
+  .about-stat-num{font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:900;color:var(--orange);}
+  .about-stat-label{font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;opacity:0.7;}
+
+  /* PRODUCTS */
+  .products-bg{background:var(--sand);}
+  .products-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:4rem;flex-wrap:wrap;gap:2rem;}
+  .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:2rem;}
+
+  .product-card{
+    background:var(--cream);
+    border-radius:30px;
+    padding:2rem;
+    position:relative;
+    overflow:hidden;
+    transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s ease;
+    cursor:pointer;
+  }
+
+  /* juice flood layer */
+  .product-card .card-juice-fill{
+    position:absolute;
+    bottom:-110%;
+    left:-10%; right:-10%;
+    height:260%;
+    border-radius:48% 52% 0 0 / 30% 30% 0 0;
+    z-index:0;
+    transition:bottom 0.65s cubic-bezier(0.22,1,0.36,1);
+    pointer-events:none;
+    background:var(--fill-color, rgba(139,195,74,0.18));
+  }
+  .product-card:hover .card-juice-fill{bottom:-25%;}
+  .product-card:hover{
+    transform:translateY(-10px) rotate(-0.8deg);
+    box-shadow:0 30px 70px rgba(62,39,35,0.14);
+  }
+  /* all direct children sit above juice fill */
+  .product-card > *{position:relative;z-index:1;}
+
+  .product-img{
+    height:220px;border-radius:20px;overflow:hidden;margin-bottom:1.5rem;
+    position:relative;z-index:1;
+  }
+  .product-img img{width:100%;height:100%;object-fit:cover;transition:transform 0.6s ease;}
+  .product-card:hover .product-img img{transform:scale(1.06);}
+  .product-tag{
+    position:absolute;top:12px;left:12px;
+    background:white;
+    padding:4px 12px;border-radius:100px;
+    font-size:0.65rem;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;
+  }
+  .product-name{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;margin-bottom:0.4rem;}
+  .product-desc{font-family:'Fraunces',serif;font-size:0.9rem;color:#6B4C3B;margin-bottom:1rem;line-height:1.5;font-weight:300;}
+  .product-footer{display:flex;align-items:center;justify-content:space-between;}
+  .product-price{font-size:1.2rem;font-weight:800;}
+
+  .product-add{
+    width:40px;height:40px;border-radius:50%;
+    background:var(--bark);color:white;
+    border:none;
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.3rem;line-height:1;
+    cursor:pointer;
+    transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    position:relative;overflow:hidden;
+    font-weight:400;
+  }
+  .product-add:hover{
+    background:var(--orange);
+    transform:scale(1.15) rotate(90deg);
+  }
+
+  /* PROCESS */
+  .process-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;margin-top:4rem;}
+  @media(max-width:900px){.process-steps{grid-template-columns:1fr 1fr;}}
+  @media(max-width:500px){.process-steps{grid-template-columns:1fr;}}
+  .process-step{text-align:center;position:relative;}
+  .process-step::after{
+    content:'→';position:absolute;right:-1rem;top:2.5rem;
+    font-size:1.5rem;color:rgba(62,39,35,0.2);
+  }
+  .process-step:last-child::after{display:none;}
+  .process-icon{
+    width:80px;height:80px;border-radius:50%;
+    background:var(--cream);
+    display:flex;align-items:center;justify-content:center;
+    font-size:2rem;margin:0 auto 1.5rem;
+    box-shadow:0 10px 30px rgba(62,39,35,0.1);
+    position:relative;overflow:hidden;
+    transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .process-icon:hover{transform:scale(1.15) rotate(10deg);}
+  .process-num{
+    position:absolute;top:4px;right:4px;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--orange);color:white;
+    font-size:0.65rem;font-weight:800;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .process-name{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;}
+  .process-text{font-family:'Fraunces',serif;font-size:0.85rem;color:#6B4C3B;line-height:1.6;font-weight:300;}
+
+  /* GALLERY */
+  .gallery-bg{background:var(--bark);}
+  .gallery-title{color:var(--cream);}
+  .gallery-label{color:var(--orange)!important;}
+  .gallery-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr;
+    grid-template-rows:300px 300px;
+    gap:1rem;
+    margin-top:3rem;
+  }
+  @media(max-width:800px){
+    .gallery-grid{grid-template-columns:1fr 1fr;grid-template-rows:200px 200px 200px;}
+    .gallery-item:first-child{grid-column:1/-1;}
+  }
+  @media(max-width:500px){
+    .gallery-grid{grid-template-columns:1fr;grid-template-rows:auto;}
+  }
+  .gallery-item{
+    border-radius:20px;overflow:hidden;position:relative;
+    cursor:none;
+  }
+  .gallery-item:first-child{grid-row:1/3;}
+  .gallery-item img{width:100%;height:100%;object-fit:cover;transition:transform 0.6s ease;}
+  .gallery-item:hover img{transform:scale(1.08);}
+  .gallery-item-overlay{
+    position:absolute;inset:0;
+    background:linear-gradient(to top, rgba(62,39,35,0.8) 0%, transparent 50%);
+    display:flex;align-items:flex-end;padding:1.5rem;
+    opacity:0;transition:opacity 0.3s ease;
+  }
+  .gallery-item:hover .gallery-item-overlay{opacity:1;}
+  .gallery-item-label{color:white;font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;}
+
+  /* TESTIMONIALS */
+  .testimonials-bg{background:linear-gradient(135deg, var(--cream) 0%, var(--sand) 100%);}
+  .testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:4rem;}
+  @media(max-width:900px){.testimonials-grid{grid-template-columns:1fr 1fr;}}
+  @media(max-width:600px){.testimonials-grid{grid-template-columns:1fr;}}
+  .testimonial-card{
+    background:white;border-radius:24px;padding:2rem;
+    position:relative;
+    box-shadow:0 4px 30px rgba(62,39,35,0.06);
+    transition:transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .testimonial-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(62,39,35,0.12);}
+  .testimonial-quote{font-size:3rem;color:var(--orange);line-height:1;margin-bottom:1rem;font-family:'Playfair Display',serif;}
+  .testimonial-text{font-family:'Fraunces',serif;font-size:0.95rem;line-height:1.7;color:#5A3E35;margin-bottom:1.5rem;font-weight:300;}
+  .testimonial-author{display:flex;align-items:center;gap:0.8rem;}
+  .testimonial-avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;}
+  .testimonial-avatar img{width:100%;height:100%;object-fit:cover;}
+  .testimonial-name{font-weight:700;font-size:0.9rem;}
+  .testimonial-role{font-size:0.75rem;color:#8B6B5A;letter-spacing:0.05em;}
+  .stars{color:var(--mango);font-size:0.85rem;margin-bottom:0.8rem;}
+
+  /* CTA */
+  .cta-section{
+    background:var(--orange);
+    padding:8rem 4%;
+    text-align:center;
+    position:relative;overflow:hidden;
+  }
+  .cta-section::before{
+    content:'';position:absolute;inset:0;
+    background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .cta-title{font-family:'Playfair Display',serif;font-size:clamp(2.5rem,6vw,5rem);font-weight:900;color:white;line-height:1;margin-bottom:1.5rem;letter-spacing:-0.02em;}
+  .cta-sub{font-family:'Fraunces',serif;font-size:1.1rem;color:rgba(255,255,255,0.85);margin-bottom:3rem;font-weight:300;}
+
+  /* FOOTER */
+  footer{background:var(--bark);padding:5rem 4% 3rem;}
+  .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:4rem;margin-bottom:4rem;}
+  @media(max-width:900px){.footer-grid{grid-template-columns:1fr 1fr;gap:2rem;}}
+  @media(max-width:500px){.footer-grid{grid-template-columns:1fr;}}
+  .footer-brand{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:var(--cream);margin-bottom:1rem;}
+  .footer-brand span{color:var(--orange);}
+  .footer-desc{font-family:'Fraunces',serif;font-size:0.9rem;color:rgba(245,230,200,0.6);line-height:1.7;font-weight:300;}
+  .footer-col-title{font-size:0.7rem;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:var(--orange);margin-bottom:1.2rem;}
+  .footer-col a{display:block;color:rgba(245,230,200,0.7);text-decoration:none;font-size:0.9rem;margin-bottom:0.6rem;transition:color 0.2s;}
+  .footer-col a:hover{color:var(--cream);}
+  .footer-bottom{border-top:1px solid rgba(245,230,200,0.1);padding-top:2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
+  .footer-copy{color:rgba(245,230,200,0.4);font-size:0.8rem;}
+  .social-links{display:flex;gap:1rem;}
+  .social-link{
+    width:36px;height:36px;border-radius:50%;
+    border:1px solid rgba(245,230,200,0.2);
+    display:flex;align-items:center;justify-content:center;
+    color:rgba(245,230,200,0.6);font-size:0.8rem;text-decoration:none;
+    transition:all 0.3s ease;
+  }
+  .social-link:hover{background:var(--orange);border-color:var(--orange);color:white;}
+
+  /* SCROLL INDICATOR */
+  .scroll-indicator{
+    position:absolute;bottom:3rem;left:50%;transform:translateX(-50%);
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    animation:fadeInUp 1s 2s both;
+  }
+  .scroll-mouse{
+    width:24px;height:36px;border:2px solid rgba(62,39,35,0.4);
+    border-radius:12px;position:relative;
+  }
+  .scroll-dot{
+    width:4px;height:8px;background:var(--orange);border-radius:2px;
+    position:absolute;top:5px;left:50%;transform:translateX(-50%);
+    animation:scrolldot 2s ease infinite;
+  }
+  @keyframes scrolldot{0%{top:5px;opacity:1;}100%{top:20px;opacity:0;}}
+  .scroll-text{font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.4;}
+
+  /* ANIMATIONS */
+  @keyframes fadeInUp{
+    from{opacity:0;transform:translateY(30px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .reveal{opacity:0;transform:translateY(40px);transition:opacity 0.8s ease, transform 0.8s ease;}
+  .reveal.visible{opacity:1;transform:translateY(0);}
+
+  /* STICKY CTA PILL */
+  .sticky-pill{
+    position:fixed;bottom:2rem;right:2rem;
+    background:var(--bark);color:var(--cream);
+    padding:0.8rem 1.5rem;border-radius:100px;
+    font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+    box-shadow:0 10px 40px rgba(62,39,35,0.3);
+    cursor:pointer;z-index:500;
+    transform:translateY(100px);opacity:0;
+    transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    text-decoration:none;display:flex;align-items:center;gap:8px;
+  }
+  .sticky-pill.visible{transform:translateY(0);opacity:1;}
+  .sticky-pill:hover{background:var(--orange);}
+
+  /* HERO IMAGE */
+  .hero-visual{
+    position:absolute;right:0;top:0;bottom:0;width:50%;
+    display:flex;align-items:center;justify-content:center;
+    pointer-events:none;
+  }
+  .hero-img-wrap{
+    width:520px;height:520px;
+    border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+    overflow:hidden;
+    position:relative;
+    box-shadow:0 40px 100px rgba(255,109,0,0.2);
+  }
+  .hero-img-wrap img{width:100%;height:100%;object-fit:cover;}
+  .hero-circle-text{
+    position:absolute;
+    width:140px;height:140px;
+    top:-20px;right:60px;
+    animation:spin 15s linear infinite;
+  }
+  @keyframes spin{100%{transform:rotate(360deg);}}
+
+  /* INGREDIENTS TICKER */
+  .ingredients-section{padding:4rem 4%;background:var(--lime);overflow:hidden;}
+  .ingredients-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:white;margin-bottom:1.5rem;text-align:center;}
+  .ingredients-ticker{display:flex;gap:1.5rem;width:max-content;animation:marquee 25s linear infinite;}
+  .ingredient-chip{
+    display:flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,0.25);
+    padding:0.6rem 1.2rem;border-radius:100px;
+    color:white;font-size:0.85rem;font-weight:600;white-space:nowrap;
+    backdrop-filter:blur(4px);
+  }
+
+  /* NUMBERS */
+  .numbers-section{background:var(--cream);padding:6rem 4%;}
+  .numbers-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;text-align:center;}
+  @media(max-width:700px){.numbers-grid{grid-template-columns:1fr 1fr;}}
+  .number-item{}
+  .number-val{font-family:'Playfair Display',serif;font-size:clamp(3rem,6vw,5rem);font-weight:900;color:var(--orange);line-height:1;}
+  .number-label{font-size:0.8rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#8B6B5A;margin-top:0.5rem;}
+
+  @media(max-width:768px){
+    .about-grid, .products-header{flex-direction:column;}
+    .about-grid{grid-template-columns:1fr;}
+    .hero-visual{display:none;}
+    .hero-content{max-width:100%;}
+    nav .nav-links{display:none;}
+    .hamburger{display:flex;}
+  }
+
+  /* PRELOADER */
+  .preloader{
+    position:fixed;inset:0;background:var(--bark);
+    display:flex;align-items:center;justify-content:center;
+    z-index:99999;
+    flex-direction:column;gap:1rem;
+  }
+  .preloader-logo{font-family:'Playfair Display',serif;font-size:3rem;font-weight:900;color:var(--cream);}
+  .preloader-logo span{color:var(--orange);}
+  .preloader-bar{width:200px;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;}
+  .preloader-fill{height:100%;background:linear-gradient(90deg,var(--lime),var(--orange));border-radius:2px;width:0%;transition:width 0.1s;}
+
+  /* JUICE DROP animation */
+  @keyframes dropfall {
+    0%{transform:translateY(0) scale(1);opacity:1;}
+    80%{transform:translateY(60px) scale(0.8);opacity:0.7;}
+    100%{transform:translateY(80px) scale(0.3);opacity:0;}
+  }
+</style>
+</head>
+<body>
+
+<!-- PRELOADER -->
+<div class="preloader" id="preloader">
+  <div class="preloader-logo">Juice<span>Kadai</span></div>
+  <div class="preloader-bar"><div class="preloader-fill" id="preloaderFill"></div></div>
+  <div style="color:rgba(245,230,200,0.4);font-size:0.75rem;letter-spacing:0.2em;text-transform:uppercase;">Squeezing the freshest...</div>
+</div>
+
+<!-- FRUIT CURSOR -->
+<div id="fruit-cursor">🍊</div>
+<div id="fruit-cursor-ring"></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo">Juice<span>Kadai</span></div>
+  <div class="nav-links" style="display:flex;gap:2.5rem;align-items:center;">
+    <a href="#about">About</a>
+    <a href="#products">Menu</a>
+    <a href="#process">Process</a>
+    <a href="#gallery">Gallery</a>
+    <a href="#contact" class="nav-cta">Order Now</a>
+  </div>
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <div style="position:absolute;top:1.5rem;right:4%;font-size:2rem;cursor:pointer;" onclick="toggleMenu()">✕</div>
+  <a href="#about" onclick="toggleMenu()">About</a>
+  <a href="#products" onclick="toggleMenu()">Menu</a>
+  <a href="#process" onclick="toggleMenu()">Process</a>
+  <a href="#gallery" onclick="toggleMenu()">Gallery</a>
+  <a href="#contact" onclick="toggleMenu()" style="color:var(--orange);">Order Now →</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="hero-blob" style="width:600px;height:500px;background:var(--orange);top:-10%;right:-5%;animation-duration:9s;"></div>
+  <div class="hero-blob" style="width:400px;height:400px;background:var(--lime);bottom:-15%;left:-5%;animation-duration:7s;animation-delay:-3s;"></div>
+
+  <span class="fruit-float" style="top:20%;left:5%;animation-delay:-1s;">🍋</span>
+  <span class="fruit-float" style="top:60%;left:8%;animation-delay:-3s;font-size:2rem;">🥝</span>
+  <span class="fruit-float" style="top:15%;left:45%;animation-delay:-2s;font-size:2rem;">🍓</span>
+  <span class="fruit-float" style="bottom:20%;left:40%;animation-delay:-4s;">🥭</span>
+
+  <div class="hero-content" style="padding-top:5rem;">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      100% Organic · Cold-Pressed · Farm-to-Glass
+    </div>
+    <h1 class="hero-title">
+      <span class="line" id="heroLine1">Drink the</span>
+      <span class="line orange" id="heroLine2">Jungle.</span>
+      <span class="line italic" id="heroLine3">Feel Alive.</span>
+    </h1>
+    <p class="hero-sub">Hand-pressed from sun-ripened fruits, no preservatives, no shortcuts — just nature's sweetest intelligence in every sip.</p>
+    <div class="hero-actions">
+      <button class="juice-btn btn-primary" onclick="handleOrder(this)">
+        <span class="btn-text">Explore Menu →</span>
+        <div class="juice-fill"></div>
+      </button>
+      <button class="juice-btn btn-secondary" onclick="document.getElementById('process').scrollIntoView({behavior:'smooth'})">
+        <span class="btn-text">Our Story</span>
+        <div class="juice-fill"></div>
+      </button>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="hero-img-wrap">
+      <img src="https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=800&q=80" alt="Fresh Juices">
+    </div>
+    <!-- Circular text SVG -->
+    <svg class="hero-circle-text" viewBox="0 0 140 140">
+      <defs>
+        <path id="circle-path" d="M70,70 m-55,0 a55,55 0 1,1 110,0 a55,55 0 1,1 -110,0"/>
+      </defs>
+      <text font-size="11" fill="var(--orange)" font-family="Syne" font-weight="700" letter-spacing="3">
+        <textPath href="#circle-path">COLD PRESSED • FARM FRESH • ORGANIC • </textPath>
+      </text>
+    </svg>
+  </div>
+
+  <div class="scroll-indicator">
+    <div class="scroll-mouse"><div class="scroll-dot"></div></div>
+    <div class="scroll-text">Scroll</div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-inner" id="marqueeInner">
+    <span class="marquee-item">Cold Pressed</span><span class="marquee-dot">●</span>
+    <span class="marquee-item">Zero Preservatives</span><span class="marquee-dot">●</span>
+    <span class="marquee-item">Farm Fresh</span><span class="marquee-dot">●</span>
+    <span class="marquee-item">Handpicked Fruits</span><span class="marquee-dot">●</span>
+    <span class="marquee-item">Made Daily</span><span class="marquee-dot">●</span>
+    <span class="marquee-item">100% Organic</span><span class="marquee-dot">●</span>
+    <span class="marquee-item">JuiceKadai</span><span class="marquee-dot">●</span>
+    <span class="marquee-item">Cold Pressed</span><span class="marquee-dot">●</span>
+    <span class="marquee-item">Zero Preservatives</span><span class="marquee-dot">●</span>
+    <span class="marquee-item">Farm Fresh</span><span class="marquee-dot">●</span>
+    <span class="marquee-item">Handpicked Fruits</span><span class="marquee-dot">●</span>
+    <span class="marquee-item">Made Daily</span><span class="marquee-dot">●</span>
+    <span class="marquee-item">100% Organic</span><span class="marquee-dot">●</span>
+    <span class="marquee-item">JuiceKadai</span><span class="marquee-dot">●</span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid">
+    <div class="reveal">
+      <div class="section-label">Our Philosophy</div>
+      <h2 class="section-title">Nature brewed,<br><em style="font-style:italic;">soul fed.</em></h2>
+      <p class="section-body" style="margin-bottom:2rem;">At JuiceKadai, we believe the best things in life come without labels. We source straight from organic farms at peak ripeness, press within 24 hours, and bottle without anything your grandmother wouldn't recognize.</p>
+      <p class="section-body" style="margin-bottom:2.5rem;">Every bottle is a small act of rebellion against the ordinary — a vivid, living, breathing reminder that nature got it right the first time.</p>
+      <button class="juice-btn btn-primary" onclick="handleOrder(this)">
+        <span class="btn-text">Meet Our Farmers →</span>
+        <div class="juice-fill"></div>
+      </button>
+    </div>
+    <div class="about-img-stack reveal">
+      <div class="about-img-main">
+        <img src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=600&q=80" alt="Fresh oranges being pressed">
+      </div>
+      <div class="about-img-accent">
+        <img src="https://images.unsplash.com/photo-1622597467836-f3285f2131b8?w=400&q=80" alt="Organic farm">
+      </div>
+      <div class="about-stat">
+        <span class="about-stat-num">12+</span>
+        <span class="about-stat-label">Organic Farms</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NUMBERS -->
+<div class="numbers-section">
+  <div class="numbers-grid">
+    <div class="number-item reveal">
+      <div class="number-val" data-count="50000">50K+</div>
+      <div class="number-label">Bottles Served</div>
+    </div>
+    <div class="number-item reveal" style="transition-delay:0.1s">
+      <div class="number-val">24<span style="font-size:2rem;">hr</span></div>
+      <div class="number-label">Farm to Bottle</div>
+    </div>
+    <div class="number-item reveal" style="transition-delay:0.2s">
+      <div class="number-val">0%</div>
+      <div class="number-label">Preservatives</div>
+    </div>
+    <div class="number-item reveal" style="transition-delay:0.3s">
+      <div class="number-val">32+</div>
+      <div class="number-label">Unique Blends</div>
+    </div>
+  </div>
+</div>
+
+<!-- INGREDIENTS TICKER -->
+<div class="ingredients-section">
+  <div class="ingredients-title">Straight from the earth 🌿</div>
+  <div style="overflow:hidden;">
+    <div class="ingredients-ticker" id="ingTicker">
+      <div class="ingredient-chip">🍊 Valencia Orange</div>
+      <div class="ingredient-chip">🥭 Alphonso Mango</div>
+      <div class="ingredient-chip">🍋 Eureka Lemon</div>
+      <div class="ingredient-chip">🍎 Fuji Apple</div>
+      <div class="ingredient-chip">🥝 Zespri Kiwi</div>
+      <div class="ingredient-chip">🍇 Concord Grape</div>
+      <div class="ingredient-chip">🥕 Organic Carrot</div>
+      <div class="ingredient-chip">🫚 Cold-pressed Ginger</div>
+      <div class="ingredient-chip">🌿 Wheatgrass</div>
+      <div class="ingredient-chip">🍓 Strawberry</div>
+      <div class="ingredient-chip">🍍 Pineapple</div>
+      <div class="ingredient-chip">🧃 Pomegranate</div>
+      <div class="ingredient-chip">🍊 Valencia Orange</div>
+      <div class="ingredient-chip">🥭 Alphonso Mango</div>
+      <div class="ingredient-chip">🍋 Eureka Lemon</div>
+      <div class="ingredient-chip">🍎 Fuji Apple</div>
+      <div class="ingredient-chip">🥝 Zespri Kiwi</div>
+      <div class="ingredient-chip">🍇 Concord Grape</div>
+      <div class="ingredient-chip">🥕 Organic Carrot</div>
+      <div class="ingredient-chip">🫚 Cold-pressed Ginger</div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<section class="products-bg" id="products">
+  <div class="products-header reveal">
+    <div>
+      <div class="section-label">Our Blends</div>
+      <h2 class="section-title">Every sip,<br>a little <em style="font-style:italic;">wild.</em></h2>
+    </div>
+    <button class="juice-btn btn-primary" onclick="handleOrder(this)">
+      <span class="btn-text">Full Menu →</span>
+      <div class="juice-fill"></div>
+    </button>
+  </div>
+  <div class="products-grid">
+    <div class="product-card reveal" style="--fill-color:rgba(255,109,0,0.13);">
+      <div class="card-juice-fill"></div>
+      <div class="product-img">
+        <img src="https://aamrai.com/wp-content/uploads/2023/12/KESAR-scaled.jpg?w=500&q=80" alt="Sunrise Mango">
+        <span class="product-tag" style="color:var(--orange);">🌅 Bestseller</span>
+      </div>
+      <div class="product-name">Sunrise Mango</div>
+      <div class="product-desc">Alphonso mango, turmeric, black pepper & a whisper of cardamom.</div>
+      <div class="product-footer">
+        <span class="product-price">₹120</span>
+        <button class="product-add" onclick="addToCart(this)">+</button>
+      </div>
+    </div>
+    <div class="product-card reveal" style="transition-delay:0.1s;--fill-color:rgba(139,195,74,0.15);">
+      <div class="card-juice-fill"></div>
+      <div class="product-img">
+        <img src="https://cdn2.foodviva.com/static-content/food-images/juice-recipes/kiwi-juice-recipe/kiwi-juice-recipe.jpg?w=500&q=80" alt="Green Fever">
+        <span class="product-tag" style="color:var(--lime-dark);">🌿 Detox</span>
+      </div>
+      <div class="product-name">Green Fever</div>
+      <div class="product-desc">Wheatgrass, cucumber, kiwi, spinach, apple & a squeeze of lime.</div>
+      <div class="product-footer">
+        <span class="product-price">₹140</span>
+        <button class="product-add" onclick="addToCart(this)">+</button>
+      </div>
+    </div>
+    <div class="product-card reveal" style="transition-delay:0.2s;--fill-color:rgba(198,40,40,0.1);">
+      <div class="card-juice-fill"></div>
+      <div class="product-img">
+        <img src="https://cdn1.foodviva.com/static-content/food-images/juice-recipes/beetroot-juice-recipe/beetroot-juice-recipe.jpg?w=500&q=80" alt="Beetroot Bliss">
+        <span class="product-tag" style="color:var(--berry);">❤️ Energy</span>
+      </div>
+      <div class="product-name">Beetroot Bliss</div>
+      <div class="product-desc">Beetroot, carrot, orange, ginger — earthy, zingy, alive.</div>
+      <div class="product-footer">
+        <span class="product-price">₹130</span>
+        <button class="product-add" onclick="addToCart(this)">+</button>
+      </div>
+    </div>
+    <div class="product-card reveal" style="transition-delay:0.3s;--fill-color:rgba(255,179,0,0.15);">
+      <div class="card-juice-fill"></div>
+      <div class="product-img">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKM1_O9dgQ7cdUHJntPeIK0LZ5htsaD2KRfg&s?w=500&q=80" alt="Citrus Storm">
+        <span class="product-tag" style="color:#B8860B;">⚡ Immunity</span>
+      </div>
+      <div class="product-name">Citrus Storm</div>
+      <div class="product-desc">4 citrus fruits, raw honey, cayenne & Vitamin C — nature's shield.</div>
+      <div class="product-footer">
+        <span class="product-price">₹110</span>
+        <button class="product-add" onclick="addToCart(this)">+</button>
+      </div>
+    </div>
+    <div class="product-card reveal" style="transition-delay:0.4s;--fill-color:rgba(106,27,154,0.1);">
+      <div class="card-juice-fill"></div>
+      <div class="product-img">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTur5lGyAaH0K43p7Gi2Qbdxh76tzRrUU4sJw&s?w=500&q=80" alt="Purple Haze">
+        <span class="product-tag" style="color:#6A1B9A;">🍇 New</span>
+      </div>
+      <div class="product-name">Purple Haze</div>
+      <div class="product-desc">Grape, pomegranate, blueberry & hibiscus — the antioxidant king.</div>
+      <div class="product-footer">
+        <span class="product-price">₹150</span>
+        <button class="product-add" onclick="addToCart(this)">+</button>
+      </div>
+    </div>
+    <div class="product-card reveal" style="transition-delay:0.5s;--fill-color:rgba(255,158,64,0.14);">
+      <div class="card-juice-fill"></div>
+      <div class="product-img">
+        <img src="https://www.orchidsandsweettea.com/wp-content/uploads/2022/07/Pineapple-Chia-Mocktail-3-of-5.jpg?w=500&q=80" alt="Pineapple Punch">
+        <span class="product-tag" style="color:#0277BD;">🌊 Tropical</span>
+      </div>
+      <div class="product-name">Pineapple Punch</div>
+      <div class="product-desc">Pineapple, coconut water, mint & basil seeds — vacation in a bottle.</div>
+      <div class="product-footer">
+        <span class="product-price">₹125</span>
+        <button class="product-add" onclick="addToCart(this)">+</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div style="text-align:center;max-width:600px;margin:0 auto 2rem;" class="reveal">
+    <div class="section-label">From Farm to You</div>
+    <h2 class="section-title">Pressed with <em style="font-style:italic;">purpose.</em></h2>
+  </div>
+  <div class="process-steps">
+    <div class="process-step reveal">
+      <div class="process-icon">🌱<div class="process-num">1</div></div>
+      <div class="process-name">Sourced</div>
+      <div class="process-text">Handpicked from certified organic farms within 100km — no long-haul, no compromise.</div>
+    </div>
+    <div class="process-step reveal" style="transition-delay:0.1s;">
+      <div class="process-icon">🧺<div class="process-num">2</div></div>
+      <div class="process-name">Sorted</div>
+      <div class="process-text">Every fruit is washed, inspected, and selected by hand — only the finest make the cut.</div>
+    </div>
+    <div class="process-step reveal" style="transition-delay:0.2s;">
+      <div class="process-icon">⚙️<div class="process-num">3</div></div>
+      <div class="process-name">Cold-Pressed</div>
+      <div class="process-text">Our hydraulic press extracts juice at low temperature, keeping every enzyme alive.</div>
+    </div>
+    <div class="process-step reveal" style="transition-delay:0.3s;">
+      <div class="process-icon">🚀<div class="process-num">4</div></div>
+      <div class="process-name">Delivered</div>
+      <div class="process-text">Bottled and dispatched within hours — reaching you before the goodness fades.</div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="gallery-bg" id="gallery" style="padding:8rem 4%;">
+  <div class="reveal">
+    <div class="section-label gallery-label">Visual Stories</div>
+    <h2 class="section-title gallery-title">Colors that <em style="font-style:italic;">taste</em> like something.</h2>
+  </div>
+  <div class="gallery-grid">
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80" alt="Colorful juices">
+      <div class="gallery-item-overlay"><span class="gallery-item-label">Morning Ritual →</span></div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=500&q=80" alt="Fresh oranges">
+      <div class="gallery-item-overlay"><span class="gallery-item-label">Sun-Kissed →</span></div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://www.puregreenfranchise.com/wp-content/uploads/2023/10/Juice-Bar-Franchise-Build-Out-to-Grand-Opening-1024x683.webp?w=500&q=80" alt="Juice bar">
+      <div class="gallery-item-overlay"><span class="gallery-item-label">Our Kadai →</span></div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1622597467836-f3285f2131b8?w=500&q=80" alt="Green juice">
+      <div class="gallery-item-overlay"><span class="gallery-item-label">Green Dreams →</span></div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1546173159-315724a31696?w=500&q=80" alt="Berry juice">
+      <div class="gallery-item-overlay"><span class="gallery-item-label">Berry Wild →</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials-bg" id="testimonials" style="padding:8rem 4%;">
+  <div style="text-align:center;max-width:600px;margin:0 auto 2rem;" class="reveal">
+    <div class="section-label">Honest Sips</div>
+    <h2 class="section-title">They tried it,<br><em style="font-style:italic;">now they preach it.</em></h2>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial-card reveal">
+      <div class="testimonial-quote">"</div>
+      <div class="stars">★★★★★</div>
+      <div class="testimonial-text">I've tried dozens of cold-press brands. JuiceKadai is the only one where I can actually taste the farm. The Green Fever is my morning religion.</div>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar"><img src="https://i.pravatar.cc/150?img=47" alt="Priya"></div>
+        <div>
+          <div class="testimonial-name">Priya Sundaram</div>
+          <div class="testimonial-role">Yoga Instructor, Chennai</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card reveal" style="transition-delay:0.1s;">
+      <div class="testimonial-quote">"</div>
+      <div class="stars">★★★★★</div>
+      <div class="testimonial-text">The Sunrise Mango tastes like someone bottled the best summer of your childhood. I order 6 bottles every Monday and they're gone by Wednesday.</div>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar"><img src="https://i.pravatar.cc/150?img=68" alt="Arjun"></div>
+        <div>
+          <div class="testimonial-name">Arjun Mehta</div>
+          <div class="testimonial-role">Chef, Bengaluru</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card reveal" style="transition-delay:0.2s;">
+      <div class="testimonial-quote">"</div>
+      <div class="stars">★★★★★</div>
+      <div class="testimonial-text">Finally a juice brand that doesn't lie. The 0% preservative thing is real — you can taste the difference. Beetroot Bliss changed my blood pressure game.</div>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar"><img src="https://i.pravatar.cc/150?img=23" alt="Dr Kavitha"></div>
+        <div>
+          <div class="testimonial-name">Dr. Kavitha Rao</div>
+          <div class="testimonial-role">Cardiologist, Hyderabad</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <div style="position:relative;z-index:1;">
+    <div class="section-label" style="color:rgba(255,255,255,0.7);">Let's Get Fresh</div>
+    <h2 class="cta-title reveal">Ready to<br><em style="font-style:italic;">drink wild?</em></h2>
+    <p class="cta-sub reveal">Order before noon, receive your cold-pressed bottles by evening. That's the JuiceKadai promise.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;" class="reveal">
+      <button class="juice-btn btn-white" onclick="handleOrder(this)">
+        <span class="btn-text">Order Now →</span>
+        <div class="juice-fill"></div>
+      </button>
+      <button class="juice-btn" style="background:rgba(255,255,255,0.15);color:white;backdrop-filter:blur(10px);" onclick="handleOrder(this)">
+        <span class="btn-text">📞 +91 98765 43210</span>
+        <div class="juice-fill" style="background:rgba(255,255,255,0.3);"></div>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">Juice<span>Kadai</span></div>
+      <p class="footer-desc">Cold-pressed, organically sourced, farm-fresh juices delivered to your door. Because you deserve better than sugar water.</p>
+      <div class="social-links" style="margin-top:1.5rem;">
+        <a class="social-link" href="#">𝕏</a>
+        <a class="social-link" href="#">in</a>
+        <a class="social-link" href="#">📷</a>
+        <a class="social-link" href="#">▶</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Menu</div>
+      <a href="#">Cold Pressed</a>
+      <a href="#">Detox Blends</a>
+      <a href="#">Energy Shots</a>
+      <a href="#">Seasonal Specials</a>
+      <a href="#">Bundles</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Company</div>
+      <a href="#">About Us</a>
+      <a href="#">Our Farms</a>
+      <a href="#">Process</a>
+      <a href="#">Sustainability</a>
+      <a href="#">Press</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Connect</div>
+      <a href="#">Contact Us</a>
+      <a href="#">Wholesale</a>
+      <a href="#">Franchise</a>
+      <a href="#">Careers</a>
+      <a href="#">FAQ</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2026 JuiceKadai. Grown with love, bottled with honesty. Developed by Netsaurs</div>
+    <div class="footer-copy" style="display:flex;gap:2rem;">
+      <a href="#" style="color:inherit;text-decoration:none;">Privacy</a>
+      <a href="#" style="color:inherit;text-decoration:none;">Terms</a>
+    </div>
+  </div>
+</footer>
+
+<!-- STICKY PILL -->
+<a href="#products" class="sticky-pill" id="stickyPill">🧃 Order Now</a>
+
+<!-- CART TOAST -->
+<div id="cartToast" style="position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bark);color:var(--cream);padding:0.8rem 1.5rem;border-radius:100px;font-size:0.85rem;font-weight:700;z-index:9999;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),opacity 0.4s;opacity:0;pointer-events:none;">
+  ✓ Added to cart!
+</div>
+
+<script>
+// =====================
+// PRELOADER
+// =====================
+let progress = 0;
+const fill = document.getElementById('preloaderFill');
+const preloaderInterval = setInterval(() => {
+  progress += Math.random() * 15;
+  if(progress > 100) progress = 100;
+  fill.style.width = progress + '%';
+  if(progress >= 100){
+    clearInterval(preloaderInterval);
+    setTimeout(() => {
+      gsap.to('#preloader', {opacity:0, duration:0.8, ease:'power2.in', onComplete:() => {
+        document.getElementById('preloader').style.display = 'none';
+        initHeroAnimation();
+      }});
+    }, 400);
+  }
+}, 80);
+
+// =====================
+// FRUIT CURSOR
+// =====================
+const isMobile = window.matchMedia('(hover: none)').matches || window.innerWidth <= 768;
+
+if(!isMobile){
+  const fruitEl   = document.getElementById('fruit-cursor');
+  const ringEl    = document.getElementById('fruit-cursor-ring');
+
+  const fruits = ['🍊','🍋','🥭','🍇','🥝','🍓','🍍','🍎','🍑','🫐','🍒','🥕'];
+  let currentFruit = fruits[0];
+  let lastFruitIdx = 0;
+  let mouseX = 0, mouseY = 0;
+  let ringX = 0, ringY = 0;
+  let frameCount = 0;
+
+  // Change fruit every ~60 frames (~1 sec)
+  const CHANGE_INTERVAL = 55;
+
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    fruitEl.style.left = mouseX + 'px';
+    fruitEl.style.top  = mouseY + 'px';
+    frameCount++;
+    if(frameCount % CHANGE_INTERVAL === 0){
+      let idx;
+      do { idx = Math.floor(Math.random() * fruits.length); } while(idx === lastFruitIdx);
+      lastFruitIdx = idx;
+      currentFruit = fruits[idx];
+      // quick pop animation
+      fruitEl.style.transition = 'transform 0.15s cubic-bezier(0.34,1.56,0.64,1)';
+      fruitEl.style.transform = 'translate(-50%,-60%) scale(1.6) rotate(20deg)';
+      fruitEl.textContent = currentFruit;
+      setTimeout(() => {
+        fruitEl.style.transform = 'translate(-50%,-60%) scale(1) rotate(0deg)';
+      }, 160);
+    }
+  });
+
+  // Smooth ring follows cursor
+  function animateRing(){
+    ringX += (mouseX - ringX) * 0.13;
+    ringY += (mouseY - ringY) * 0.13;
+    ringEl.style.left = ringX + 'px';
+    ringEl.style.top  = ringY + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  // Hover states — fruit grows on interactive elements
+  document.querySelectorAll('a, button, .product-card, .gallery-item, .testimonial-card').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      fruitEl.classList.add('hovering');
+      ringEl.classList.add('hovering');
+    });
+    el.addEventListener('mouseleave', () => {
+      fruitEl.classList.remove('hovering');
+      ringEl.classList.remove('hovering');
+    });
+  });
+}
+
+// =====================
+// HERO ANIMATION
+// =====================
+function initHeroAnimation(){
+  gsap.registerPlugin(ScrollTrigger, TextPlugin);
+  const tl = gsap.timeline();
+  tl.from('.hero-badge', {y:30, opacity:0, duration:0.7, ease:'power3.out'})
+    .from('#heroLine1', {y:80, opacity:0, duration:0.8, ease:'power3.out'}, '-=0.3')
+    .from('#heroLine2', {y:80, opacity:0, duration:0.8, ease:'power3.out'}, '-=0.5')
+    .from('#heroLine3', {y:80, opacity:0, duration:0.8, ease:'power3.out'}, '-=0.5')
+    .from('.hero-sub', {y:30, opacity:0, duration:0.6, ease:'power3.out'}, '-=0.3')
+    .from('.hero-actions', {y:30, opacity:0, duration:0.6, ease:'power3.out'}, '-=0.3')
+    .from('.hero-img-wrap', {scale:0.8, opacity:0, rotation:-5, duration:1, ease:'power3.out'}, '-=0.8')
+    .from('.scroll-indicator', {opacity:0, y:10, duration:0.5}, '-=0.3');
+}
+
+// =====================
+// SCROLL REVEALS
+// =====================
+const reveals = document.querySelectorAll('.reveal');
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, {threshold:0.1, rootMargin:'0px 0px -60px 0px'});
+reveals.forEach(el => revealObserver.observe(el));
+
+// =====================
+// NAV SCROLL
+// =====================
+const navbar    = document.getElementById('navbar');
+const stickyPill = document.getElementById('stickyPill');
+window.addEventListener('scroll', () => {
+  const s = window.scrollY;
+  navbar.classList.toggle('scrolled', s > 80);
+  stickyPill.classList.toggle('visible', s > 400);
+});
+
+// =====================
+// MOBILE MENU
+// =====================
+function toggleMenu(){
+  document.getElementById('mobileMenu').classList.toggle('open');
+}
+
+// =====================
+// HANDLE ORDER BTN
+// =====================
+function handleOrder(btn){
+  if(btn.closest('.cta-section') || btn.closest('.hero') || btn.closest('.about-grid')){
+    setTimeout(() => document.getElementById('products').scrollIntoView({behavior:'smooth'}), 300);
+  }
+}
+
+// =====================
+// ADD TO CART
+// =====================
+function addToCart(btn){
+  // Bounce the + button
+  gsap.to(btn, {scale:1.5, duration:0.12, yoyo:true, repeat:1, ease:'power2.out'});
+  btn.textContent = '✓';
+  btn.style.background = 'var(--lime-dark)';
+  btn.style.borderColor = 'var(--lime-dark)';
+  btn.style.color = 'white';
+  setTimeout(() => {
+    btn.textContent = '+';
+    btn.style.background = '';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+  }, 1300);
+
+  // Toast
+  const toast = document.getElementById('cartToast');
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  toast.style.opacity = '1';
+  setTimeout(() => {
+    toast.style.transform = 'translateX(-50%) translateY(80px)';
+    toast.style.opacity = '0';
+  }, 2000);
+}
+
+// =====================
+// GSAP ScrollTrigger
+// =====================
+window.addEventListener('load', () => {
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.to('.hero-blob:first-of-type', {
+    y:-100, ease:'none',
+    scrollTrigger:{trigger:'.hero', start:'top top', end:'bottom top', scrub:1}
+  });
+
+  // Gallery items entrance
+  gsap.utils.toArray('.gallery-item').forEach((item, i) => {
+    gsap.from(item, {
+      scale:0.85, opacity:0, duration:0.8, ease:'power3.out',
+      scrollTrigger:{trigger:item, start:'top 88%', toggleActions:'play none none none'},
+      delay: i * 0.1
+    });
+  });
+});
+
+// =====================
+// AMBIENT FRUIT FLOATERS
+// =====================
+document.querySelectorAll('.fruit-float').forEach((el, i) => {
+  el.style.animationDelay  = -(i * 1.5) + 's';
+  el.style.animationDuration = (5 + Math.random() * 4) + 's';
+});
+</script>
+</body>
+</html>
